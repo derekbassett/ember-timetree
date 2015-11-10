@@ -9,6 +9,16 @@ moduleForComponent('time-tree', 'Unit | Component | time tree', {
   unit: true
 });
 
+test('it renders', function(assert) {
+  assert.expect(2);
+
+  let component = this.subject();
+  assert.equal(component._state, 'preRender');
+
+  this.render();
+  assert.equal(component._state, 'inDOM');
+});
+
 test('it renders content', function(assert) {
   assert.expect(1);
   let component = this.subject();
