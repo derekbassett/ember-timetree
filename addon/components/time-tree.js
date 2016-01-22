@@ -663,6 +663,26 @@ const TimeTreeComponent = Ember.Component.extend({
     }
 
     this.renderNodes();
+    this.updateSelectedRows();
+  },
+
+  selectionChanged: Ember.observer('selection', function() {
+    console.log("selectionChanged");
+    Ember.run.once(this, 'updateSelectedRows');
+  }),
+
+  // TODO make this safe for multi-select?
+  updateSelectedRows: function() {
+    var selections = this.get('selection') || [],
+        selection = selections[0],
+        svg = this.get('svg'),
+        datas = svg.select('.rows').selectAll('.row').data().map(function(d) {
+          return d.content;
+        }),
+        idx = datas.indexOf(selection);
+
+    if (idx < 0) { return; }
+    svg.select(`.rows .row:nth-child(${idx + 1})`).classed('selected', true);
   },
 
   setupWindowResizeListener: Ember.on('didInsertElement', function() {
