@@ -637,23 +637,16 @@ const TimeTreeComponent = Ember.Component.extend({
 
     if (selectable) {
       svg.on('click', function() {
-        let rowItems = rows.selectAll('.row');
-        let y = d3.mouse(svg.node())[1];
+        let y = d3.event.offsetY;
 
-        rowItems.classed('selected', function(d, i) {
-          let top = Number(this.getAttribute('y'));
-          let bottom = top + Number(this.getAttribute('height'));
-          let isSelected = top <= y && y < bottom;
+        rows.selectAll('.row').each(function(d, i) {
+          let top = Number(this.getAttribute('y')),
+              bottom = top + Number(this.getAttribute('height'));
 
-          self._labelAt(i).classed('selected', isSelected);
-
-          return isSelected;
-        });
-
-        Ember.run.scheduleOnce('afterRender', self, function() {
-          self.set('selection', rowItems.filter('.selected').data().map(function (item) {
-            return item.content || item;
-          }));
+          if (top <= y && y < bottom) {
+            // TODO does this need to be run later?
+            self.set('selection', d.content);
+          }
         });
       });
     }
@@ -663,17 +656,31 @@ const TimeTreeComponent = Ember.Component.extend({
     }
 
     this.renderNodes();
+  },
 
-    if (selectable) {
-      var selections = this.get('selection') || [],
-          selection = selections[0],
-          datas = rows.selectAll('.row').data().map(function(d) { return d.content; }),
-          idx = datas.indexOf(selection);
-
-      if (idx < 0) { return; }
-      rows.select(`.row:nth-child(${idx + 1})`).classed('selected', true);
+  didRenderNodes() {
+    if (this.get('selectable')) {
+      this.updateSelection();
     }
   },
+
+  updateSelection() {
+    var selection = this.get('selection'),
+        rows = this.get('svg').select('.rows'),
+        datas = rows.selectAll('.row').data().map(function(d) { return d.content || d; }),
+        idx = datas.indexOf(selection);
+
+    if (idx < 0) { return; }
+    rows.selectAll('.row').classed('selected', function(d, i) { return i === idx; });
+  },
+
+  selectionDidChange: Ember.observer('selection', function() {
+    if (!this.get('selectable')) { return; }
+
+    Ember.run.once(this, function() {
+      this.updateSelection();
+    });
+  }),
 
   setupWindowResizeListener: Ember.on('didInsertElement', function() {
     this.resizeBindingId = `resize.{this.get("elementId")}`;
