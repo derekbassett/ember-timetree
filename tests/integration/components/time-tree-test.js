@@ -53,13 +53,11 @@ test('clicking on a row triggers an action', function(assert) {
   assert.expect(1);
 
   this.set('content', fixtures);
-  this.set('actions', {
-    clickedAction: function(row) {
-      assert.equal(row, 3);
-    }
+  this.on('clickedAction', function(row) {
+    assert.equal(row, 3);
   });
 
-  this.render(hbs`{{time-tree content=content rowClicked=(action 'clickedAction')}}`);
+  this.render(hbs`{{time-tree content=content rowClicked='clickedAction'}}`);
   this.$("svg .content .bars .bar:nth-child(2)").each(function(i, bar) {
     Ember.run(function() {
       jQuery(bar).d3Click(i); // pass the index down to the action so we can manipulate
