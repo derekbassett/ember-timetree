@@ -639,13 +639,14 @@ const TimeTreeComponent = Ember.Component.extend({
       svg.on('click', function() {
         let y = d3.event.offsetY;
 
-        rows.selectAll('.row').each(function(d, i) {
+        rows.selectAll('.row').each(function(d) {
           let top = Number(this.getAttribute('y')),
               bottom = top + Number(this.getAttribute('height'));
 
           if (top <= y && y < bottom) {
-            // TODO does this need to be run later?
-            self.set('selection', d.content);
+            let content = d.content || d;
+            self.set('selection', content);
+            self.sendAction('rowClicked', content);
           }
         });
       });
@@ -659,24 +660,21 @@ const TimeTreeComponent = Ember.Component.extend({
   },
 
   didRenderNodes() {
-    if (this.get('selectable')) {
-      this.updateSelection();
-    }
+    this.updateSelection();
   },
 
   updateSelection() {
+    if (!this.get('selectable')) { return; }
+
     var selection = this.get('selection'),
-        rows = this.get('svg').select('.rows'),
-        datas = rows.selectAll('.row').data().map(function(d) { return d.content || d; }),
+        rows = this.get('svg').selectAll('.rows .row'),
+        datas = rows.data().map(function(d) { return d.content; }),
         idx = datas.indexOf(selection);
 
-    if (idx < 0) { return; }
-    rows.selectAll('.row').classed('selected', function(d, i) { return i === idx; });
+    rows.classed('selected', function(d, i) { return i === idx; });
   },
 
   selectionDidChange: Ember.observer('selection', function() {
-    if (!this.get('selectable')) { return; }
-
     Ember.run.once(this, function() {
       this.updateSelection();
     });

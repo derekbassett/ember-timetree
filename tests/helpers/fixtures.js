@@ -13,7 +13,8 @@ let events = [{
   'label': 'Three',
   'start': 1347802218,
   'end': 1347802518,
-  'parent': 0
+  'parent': 0,
+  'content': 3
 }, {
   'id': 4,
   'label': 'Four',
@@ -31,7 +32,8 @@ let events = [{
   'label': 'Six',
   'start': 1347801218,
   'end': 1347801618,
-  'parent': 0
+  'parent': 0,
+  'content': 6
 }, {
   'id': 7,
   'label': 'Seven',
