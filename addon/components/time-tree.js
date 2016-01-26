@@ -666,7 +666,7 @@ const TimeTreeComponent = Ember.Component.extend({
   updateSelection() {
     if (!this.get('selectable')) { return; }
 
-    var selection = this.get('selection'),
+    let selection = this.get('selection'),
         rows = this.get('svg').selectAll('.rows .row'),
         datas = rows.data().map(function(d) { return d.content; }),
         idx = datas.indexOf(selection);
@@ -675,9 +675,7 @@ const TimeTreeComponent = Ember.Component.extend({
   },
 
   selectionDidChange: Ember.observer('selection', function() {
-    Ember.run.once(this, function() {
-      this.updateSelection();
-    });
+    Ember.run.once(this, 'updateSelection');
   }),
 
   setupWindowResizeListener: Ember.on('didInsertElement', function() {
