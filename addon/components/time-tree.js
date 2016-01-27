@@ -637,24 +637,19 @@ const TimeTreeComponent = Ember.Component.extend({
 
     if (selectable) {
       svg.on('click', function() {
-        let rowItems = rows.selectAll('.row');
-        let y = d3.mouse(svg.node())[1];
+        let y = d3.event.offsetY,
+            row = rows.selectAll('.row').filter(function() {
+              let top = Number(this.getAttribute('y')),
+                  bottom = top + Number(this.getAttribute('height'));
 
-        rowItems.classed('selected', function(d, i) {
-          let top = Number(this.getAttribute('y'));
-          let bottom = top + Number(this.getAttribute('height'));
-          let isSelected = top <= y && y < bottom;
+              return top <= y && y < bottom;
+            }).data()[0];
 
-          self._labelAt(i).classed('selected', isSelected);
-
-          return isSelected;
-        });
-
-        Ember.run.scheduleOnce('afterRender', self, function() {
-          self.set('selection', rowItems.filter('.selected').data().map(function (item) {
-            return item.content || item;
-          }));
-        });
+        if (row) {
+          let data = row.content || row;
+          self.set('selection', data);
+          self.sendAction('rowClicked', data);
+        }
       });
     }
 
@@ -664,6 +659,25 @@ const TimeTreeComponent = Ember.Component.extend({
 
     this.renderNodes();
   },
+
+  didRenderNodes() {
+    this.updateSelection();
+  },
+
+  updateSelection() {
+    if (!this.get('selectable')) { return; }
+
+    let selection = this.get('selection'),
+        rows = this.get('svg').selectAll('.rows .row'),
+        datas = rows.data().map(function(d) { return d.content || d; }),
+        idx = datas.indexOf(selection);
+
+    rows.classed('selected', function(d, i) { return i === idx; });
+  },
+
+  selectionDidChange: Ember.observer('selection', function() {
+    Ember.run.once(this, 'updateSelection');
+  }),
 
   setupWindowResizeListener: Ember.on('didInsertElement', function() {
     this.resizeBindingId = `resize.{this.get("elementId")}`;
