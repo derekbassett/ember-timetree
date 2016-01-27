@@ -637,18 +637,19 @@ const TimeTreeComponent = Ember.Component.extend({
 
     if (selectable) {
       svg.on('click', function() {
-        let y = d3.event.offsetY;
+        let y = d3.event.offsetY,
+            row = rows.selectAll('.row').filter(function() {
+              let top = Number(this.getAttribute('y')),
+                  bottom = top + Number(this.getAttribute('height'));
 
-        rows.selectAll('.row').each(function(d) {
-          let top = Number(this.getAttribute('y')),
-              bottom = top + Number(this.getAttribute('height'));
+              return top <= y && y < bottom;
+            }).data()[0];
 
-          if (top <= y && y < bottom) {
-            let content = d.content || d;
-            self.set('selection', content);
-            self.sendAction('rowClicked', content);
-          }
-        });
+        if (row) {
+          let data = row.content || row;
+          self.set('selection', data);
+          self.sendAction('rowClicked', data);
+        }
       });
     }
 
@@ -668,7 +669,7 @@ const TimeTreeComponent = Ember.Component.extend({
 
     let selection = this.get('selection'),
         rows = this.get('svg').selectAll('.rows .row'),
-        datas = rows.data().map(function(d) { return d.content; }),
+        datas = rows.data().map(function(d) { return d.content || d; }),
         idx = datas.indexOf(selection);
 
     rows.classed('selected', function(d, i) { return i === idx; });
