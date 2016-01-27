@@ -460,6 +460,8 @@ const TimeTreeComponent = Ember.Component.extend({
         .attr('height', contentHeight);
     }
 
+    this.updateSelection();
+
     if (this.didRenderNodes) {
       this.didRenderNodes(nodes);
     }
@@ -658,10 +660,6 @@ const TimeTreeComponent = Ember.Component.extend({
     }
 
     this.renderNodes();
-  },
-
-  didRenderNodes() {
-    this.updateSelection();
   },
 
   updateSelection() {
